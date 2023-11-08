@@ -1,45 +1,61 @@
 from abc import ABC, abstractmethod
-import pandas as pd
+
+from timeseries_base import Timeseries
 
 
 class Operation(ABC):
+    def __init__(self, name: str):
+        """
+        Initialize an Operation with a name.
+
+        Args:
+            name (str): The name of the operation.
+        """
+        self.name = name
 
     @abstractmethod
-    def process(self, data: pd.Series) -> pd.Series:
-        """
-        Process the timeseries data and return the modified series.
-        This method must be overridden by all subclasses.
+    def process(self, timeseries: Timeseries) -> None:
+        """Processes the timeseries object.
 
-        :param data: A pandas Series representing the timeseries.
-        :return: A pandas Series after applying the operation.
+        This method must be overridden by all subclasses to apply an operation
+        on the timeseries data and modify its annotations or attributes.
+
+        Args:
+            timeseries (Timeseries): An instance of the Timeseries class.
+
         """
         pass
 
 
 class CompositeOperation(Operation):
-    def __init__(self, operations=None):
+    def __init__(self, name: str, operations=None):
         """
         Initialize the composite operation with an optional list of operations.
 
-        :param operations: A list of TimeseriesOperation instances.
+        Args:
+            name (str): The name of the composite operation.
+            operations (list of Operation): A list of Operation instances.
         """
+        super().__init__(name)
         self.operations = operations if operations is not None else []
 
     def add_operation(self, operation: Operation):
         """
         Add an operation to the composite.
 
-        :param operation: An instance of a subclass of TimeseriesOperation.
+        Args:
+            operation (Operation): An instance of a subclass of Operation.
         """
+        if not isinstance(operation, Operation):
+            raise TypeError("The operation must be an instance of Operation.")
         self.operations.append(operation)
 
-    def process(self, data: pd.Series) -> pd.Series:
+    def process(self, timeseries: Timeseries) -> None:
         """
-        Apply all operations sequentially to the data.
+        Apply all operations sequentially to the timeseries object.
 
-        :param data: A pandas Series representing the timeseries.
-        :return: A pandas Series after applying all operations.
+        Args:
+            timeseries (Timeseries): An instance of the Timeseries class representing the timeseries.
         """
         for operation in self.operations:
-            data = operation.process(data)
-        return data
+            operation.process(timeseries)
