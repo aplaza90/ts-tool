@@ -20,6 +20,8 @@ class Operation(ABC):
         This method must be overridden by all subclasses to apply an operation
         on the timeseries data and modify its annotations or attributes.
 
+        All the changes in the Timeseries object must be done from this method
+
         Args:
             timeseries (Timeseries): An instance of the Timeseries class.
 
@@ -50,12 +52,22 @@ class CompositeOperation(Operation):
             raise TypeError("The operation must be an instance of Operation.")
         self.operations.append(operation)
 
+    def remove_operation(self, operation_name: str):
+        """
+        Remove an operation from the composite based on its name.
+
+        Args:
+            operation_name (str): The name of the operation to be removed.
+        """
+        self.operations = [op for op in self.operations if op.name != operation_name]
+
     def process(self, timeseries: Timeseries) -> None:
         """
         Apply all operations sequentially to the timeseries object.
 
         Args:
-            timeseries (Timeseries): An instance of the Timeseries class representing the timeseries.
+            timeseries (Timeseries): An instance of the Timeseries class representing the
+             timeseries.
         """
         for operation in self.operations:
             operation.process(timeseries)
